@@ -48,6 +48,8 @@ android {
 dependencies {
     //webscraper
     implementation 'org.jsoup:jsoup:1.14.3'
+    // Navigation
+    implementation "androidx.navigation:navigation-compose:2.4.0-alpha10"
     implementation 'androidx.core:core-ktx:1.8.0'
     implementation 'com.google.android.gms:play-services-wearable:17.1.0'
     implementation 'androidx.percentlayout:percentlayout:1.0.0'
