@@ -59,6 +59,7 @@ import org.jsoup.select.Elements
 import android.view.WindowInsets
 import android.view.WindowInsetsController
 import androidx.compose.foundation.layout.width
+import androidx.compose.ui.unit.sp
 import androidx.wear.compose.material.ButtonDefaults
 
 
@@ -133,8 +134,14 @@ class MainActivity : ComponentActivity() {
                     val rows: Elements = tbody.select("tr")
                     val rowData: List<List<String>> = rows.map { row ->
                         val cells: Elements =
-                            row.select("td.tab_laatste_speeldag_datum, td.centeralign tab_laatste_speeldag_aftrapuur, td.tab_laatste_speeldag_thuisploeg , td.tab_laatste_speeldag_uitploeg ")
-                        cells.map { cell -> cell.text() }
+                            row.select("td.tab_laatste_speeldag_datum, td.centeralign.tab_laatste_speeldag_aftrapuur, td.tab_laatste_speeldag_thuisploeg , td.tab_laatste_speeldag_uitploeg ")
+                        cells.map { cell ->
+                            if (cell.text().length > 7) {
+                                cell.text().take(7)
+                            } else {
+                                cell.text()
+                            }
+                        }
                     }
                     println(listOf(headerCells) + rowData)
                     listOf(headerCells) + rowData
@@ -150,7 +157,6 @@ class MainActivity : ComponentActivity() {
 
             // Update the UI with the scraped data
             setContent {
-//                WearApp(tableData)
                 val navController = rememberNavController()
                 App(navController = navController, tableData, matchdayData)
 
@@ -161,17 +167,21 @@ class MainActivity : ComponentActivity() {
 
 
 @Composable
-fun App(navController: NavHostController, tableData: List<List<String>>, matchdayData: List<List<String>>) {
+fun App(
+    navController: NavHostController,
+    tableData: List<List<String>>,
+    matchdayData: List<List<String>>
+) {
     Sporting_klassementTheme {
         NavHost(navController = navController, startDestination = "home") {
             composable("home") {
                 HomeScreen(navController = navController)
             }
             composable("table") {
-                WearApp(tableData)
+                WearApp(tableData, false)
             }
             composable("other") {
-                WearApp(matchdayData)
+                WearApp(matchdayData, true)
             }
         }
     }
@@ -212,16 +222,11 @@ fun HomeScreen(navController: NavHostController) {
     }
 }
 
-@Composable
-fun OtherComponent() {
-    Text(text = "Hello, World!")
-}
-
 
 // @Composable zorgt ervoor dat toolkit enabled wordt zodat je declaratief kan schrijven
 // via Jetpack Compose toolkit
 @Composable
-fun WearApp(tableData: List<List<String>>) {
+fun WearApp(tableData: List<List<String>>, matchday: Boolean) {
     Sporting_klassementTheme {
         Box(
             modifier = Modifier
@@ -229,13 +234,13 @@ fun WearApp(tableData: List<List<String>>) {
                 .background(Color.Black)
 //                .padding(3.dp)
         ) {
-            Table(tableData)
+            Table(tableData, matchday)
         }
     }
 }
 
 @Composable
-fun Table(tableData: List<List<String>>) {
+fun Table(tableData: List<List<String>>, matchday: Boolean) {
     LazyColumn(modifier = Modifier.fillMaxSize()) {
         // padding bovenaan zetten, anders kan je eerste rij niet volledig zien
         item {
@@ -250,13 +255,13 @@ fun Table(tableData: List<List<String>>) {
                     } else {
                         Modifier.padding(6.dp)
                     }
-                    Cell(cellData = cellData, modifier = cellModifier)
+                    Cell(cellData = cellData, modifier = cellModifier, matchday)
                 }
             }
         }
         // ook onderaan padding toevoegen
         item {
-            Spacer(modifier = Modifier.height(55.dp))
+            Spacer(modifier = Modifier.height(60.dp))
         }
 
     }
@@ -264,10 +269,16 @@ fun Table(tableData: List<List<String>>) {
 
 
 @Composable
-fun Cell(cellData: String, modifier: Modifier) {
+fun Cell(cellData: String, modifier: Modifier, matchday: Boolean) {
+    var fontSize = 14.sp
+
+    if (matchday) {
+        fontSize = 12.sp
+    }
     Text(
         modifier = modifier,
-        text = cellData
+        text = cellData,
+        fontSize = fontSize
     )
 }
 
