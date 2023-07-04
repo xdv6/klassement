@@ -80,8 +80,8 @@ class MainActivity : ComponentActivity() {
             val title: String = doc.title()
             Log.d("WebScraping", "Title: $title")
 
+            // KLASSEMENT
             val table: Element? = doc.select("table.content_table.tab_klassement").first()
-
             val tableData: List<List<String>> = if (table != null) {
                 val tbody: Element? = table.select("tbody").first()
                 if (tbody != null) {
@@ -116,12 +116,43 @@ class MainActivity : ComponentActivity() {
                 emptyList()
             }
 
+            // MATCHDAY
+            val matchday: Element? = doc.select("table.content_table.tab_laatste_speeldag").first()
+            val matchdayData: List<List<String>> = if (matchday != null) {
+                val tbody: Element? = matchday.select("tbody").first()
+                if (tbody != null) {
+
+                    // Extract the header cell texts if the header row exists
+                    val headerRow: Element? = tbody.select("tr").firstOrNull()
+                    val headerCells: List<String> = headerRow?.select("td")?.map { cell ->
+                        cell.text()
+                    } ?: emptyList()
+
+
+                    // data uit tabel zelf processen
+                    val rows: Elements = tbody.select("tr")
+                    val rowData: List<List<String>> = rows.map { row ->
+                        val cells: Elements =
+                            row.select("td.tab_laatste_speeldag_datum, td.centeralign tab_laatste_speeldag_aftrapuur, td.tab_laatste_speeldag_thuisploeg , td.tab_laatste_speeldag_uitploeg ")
+                        cells.map { cell -> cell.text() }
+                    }
+                    println(listOf(headerCells) + rowData)
+                    listOf(headerCells) + rowData
+
+                } else {
+                    emptyList()
+                }
+            } else {
+                emptyList()
+            }
+//
+
 
             // Update the UI with the scraped data
             setContent {
 //                WearApp(tableData)
                 val navController = rememberNavController()
-                App(navController = navController, tableData)
+                App(navController = navController, tableData, matchdayData)
 
             }
         }
@@ -130,7 +161,7 @@ class MainActivity : ComponentActivity() {
 
 
 @Composable
-fun App(navController: NavHostController, tableData: List<List<String>>) {
+fun App(navController: NavHostController, tableData: List<List<String>>, matchdayData: List<List<String>>) {
     Sporting_klassementTheme {
         NavHost(navController = navController, startDestination = "home") {
             composable("home") {
@@ -140,7 +171,7 @@ fun App(navController: NavHostController, tableData: List<List<String>>) {
                 WearApp(tableData)
             }
             composable("other") {
-                OtherComponent()
+                WearApp(matchdayData)
             }
         }
     }
@@ -249,5 +280,9 @@ fun PreviewApp() {
         listOf("Row 1 Cell 1", "Row 1 Cell 2"),
         listOf("Row 2 Cell 1", "Row 2 Cell 2")
     )
-    App(navController = navController, tableData)
+    val matchdayData = listOf(
+        listOf("Row 1 Cell 1", "Row 1 Cell 2"),
+        listOf("Row 2 Cell 1", "Row 2 Cell 2")
+    )
+    App(navController = navController, tableData, matchdayData)
 }
