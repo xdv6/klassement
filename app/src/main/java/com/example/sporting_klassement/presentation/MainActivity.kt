@@ -65,196 +65,79 @@ import androidx.wear.compose.material.ButtonDefaults
 // je moet in AndroidManifest.xml de volgende permission toevoegen:
 // <uses-permission android:name="android.permission.INTERNET" />
 //
-//class MainActivity : ComponentActivity() {
-//    override fun onCreate(savedInstanceState: Bundle?) {
-//        super.onCreate(savedInstanceState)
-//
-//        val scope = CoroutineScope(Dispatchers.Main)
-//
-//        // Start the scraping process in a background thread
-//        scope.launch {
-//            val url = "https://www.voetbalexpress.be/seizoen2023-2024/herenamateurs1.html"
-//            val doc: Document = withContext(Dispatchers.IO) {
-//                Jsoup.connect(url).get()
-//            }
-//            val title: String = doc.title()
-//            Log.d("WebScraping", "Title: $title")
-//
-//            val table: Element? = doc.select("table.content_table.tab_klassement").first()
-//
-//            val tableData: List<List<String>> = if (table != null) {
-//                val tbody: Element? = table.select("tbody").first()
-//                if (tbody != null) {
-//
-//                    // Extract the header cell texts if the header row exists
-//                    val headerRow: Element? = tbody?.select("tr")?.firstOrNull()
-//                    val headerCells: List<String> =
-//                        headerRow?.select("td.tab_klass_header_ploeg, td.tab_klass_header_A, td.tab_klass_header_P")
-//                            ?.map { cell ->
-//                                val text = cell.select("b").text()
-//                                if (text == "A") {
-//                                    "gesp. wed."
-//                                } else {
-//                                    text
-//                                }
-//                            } ?: emptyList()
-//
-//
-//                    // data zelf
-//                    val rows: Elements = tbody.select("tr")
-//                    val rowData: List<List<String>> = rows.map { row ->
-//                        val cells: Elements =
-//                            row.select("td.tab_klass_volgnr, td.tab_klass_ploeg, td.tab_klass_A, td.tab_klass_P")
-//                        cells.map { cell -> cell.text() }
-//                    }
-//
-//                    listOf(headerCells) + rowData
-//                } else {
-//                    emptyList()
-//                }
-//            } else {
-//                emptyList()
-//            }
-//
-//
-//            // Update the UI with the scraped data
-//            setContent {
-//                WearApp(tableData)
-//            }
-//        }
-//    }
-//}
-//
-//
-//
-//
-//// @Composable zorgt ervoor dat toolkit enabled wordt zodat je declaratief kan schrijven
-//// via Jetpack Compose toolkit
-//@Composable
-//fun WearApp(tableData: List<List<String>>) {
-//    Sporting_klassementTheme {
-//        Box(
-//            modifier = Modifier
-//                .fillMaxSize()
-//                .background(Color.Black)
-////                .padding(3.dp)
-//        ) {
-//            Table(tableData)
-//        }
-//    }
-//}
-//
-//@Composable
-//fun Table(tableData: List<List<String>>) {
-//    LazyColumn(modifier = Modifier.fillMaxSize()) {
-//        // padding bovenaan zetten, anders kan je eerste rij niet volledig zien
-//        item {
-//            Spacer(modifier = Modifier.height(55.dp))
-//        }
-//        items(tableData.size) { rowIndex ->
-//            val row = tableData[rowIndex]
-//            Row(modifier = Modifier.fillMaxWidth()) {
-//                row.forEach { cellData ->
-//                    val cellModifier = if (rowIndex == 0) {
-//                        Modifier.padding(start = 12.dp, end = 1.dp)
-//                    } else {
-//                        Modifier.padding(6.dp)
-//                    }
-//                    Cell(cellData = cellData, modifier = cellModifier)
-//                }
-//            }
-//        }
-//        item {
-//            Spacer(modifier = Modifier.height(55.dp))
-//        }
-//
-//    }
-//}
-//
-//
-//@Composable
-//fun Cell(cellData: String, modifier: Modifier) {
-//    Text(
-//        modifier = modifier,
-//        text = cellData
-//    )
-//}
-//
-//
-//@Composable
-//fun Greeting(greetingName: String) {
-//    Text(
-//        modifier = Modifier.fillMaxWidth(),
-//        textAlign = TextAlign.Center,
-//        color = MaterialTheme.colors.primary,
-//        text = stringResource(R.string.hello_world, greetingName)
-//    )
-//}
-//
-//
-//@Preview(device = Devices.WEAR_OS_SMALL_ROUND, showSystemUi = true)
-//@Composable
-//fun DefaultPreview() {
-////    val title = "Preview Android"
-//    val tableData = listOf(
-//        listOf("Row 1 Cell 1", "Row 1 Cell 2"),
-//        listOf("Row 2 Cell 1", "Row 2 Cell 2")
-//    )
-//    WearApp(tableData)
-//}
-
-
 class MainActivity : ComponentActivity() {
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        setContent {
-            val navController = rememberNavController()
-            App(navController = navController)
+        val scope = CoroutineScope(Dispatchers.Main)
+
+        // Start the scraping process in a background thread
+        scope.launch {
+            val url = "https://www.voetbalexpress.be/seizoen2023-2024/herenamateurs1.html"
+            val doc: Document = withContext(Dispatchers.IO) {
+                Jsoup.connect(url).get()
+            }
+            val title: String = doc.title()
+            Log.d("WebScraping", "Title: $title")
+
+            val table: Element? = doc.select("table.content_table.tab_klassement").first()
+
+            val tableData: List<List<String>> = if (table != null) {
+                val tbody: Element? = table.select("tbody").first()
+                if (tbody != null) {
+
+                    // Extract the header cell texts if the header row exists
+                    val headerRow: Element? = tbody?.select("tr")?.firstOrNull()
+                    val headerCells: List<String> =
+                        headerRow?.select("td.tab_klass_header_ploeg, td.tab_klass_header_A, td.tab_klass_header_P")
+                            ?.map { cell ->
+                                val text = cell.select("b").text()
+                                if (text == "A") {
+                                    "gesp. wed."
+                                } else {
+                                    text
+                                }
+                            } ?: emptyList()
+
+
+                    // data uit tabel zelf processen
+                    val rows: Elements = tbody.select("tr")
+                    val rowData: List<List<String>> = rows.map { row ->
+                        val cells: Elements =
+                            row.select("td.tab_klass_volgnr, td.tab_klass_ploeg, td.tab_klass_A, td.tab_klass_P")
+                        cells.map { cell -> cell.text() }
+                    }
+
+                    listOf(headerCells) + rowData
+                } else {
+                    emptyList()
+                }
+            } else {
+                emptyList()
+            }
+
+
+            // Update the UI with the scraped data
+            setContent {
+//                WearApp(tableData)
+                val navController = rememberNavController()
+                App(navController = navController, tableData)
+
+            }
         }
     }
-
-//    override fun onResume() {
-//        super.onResume()
-//
-//        val callback = object : OnBackPressedCallback(true) {
-//            override fun handleOnBackPressed() {
-//                when (currentScreen) {
-//                    Screen.Home -> {
-//                        // If the current screen is the Home screen, show system UI
-//                        window.insetsController?.show(WindowInsets.Type.systemBars())
-//                    }
-//                    Screen.Other -> {
-//                        // If the current screen is the Other screen, navigate back to the Home screen
-//                        currentScreen = Screen.Home
-//                    }
-//                }
-//            }
-//        }
-
-//        onBackPressedDispatcher.addCallback(this, callback)
-    }
-
-//    override fun onPause() {
-//        super.onPause()
-//
-//        // Reset the current screen state when the activity is paused
-//        currentScreen = Screen.Home
-//    }
-//}
-
+}
 
 
 @Composable
-fun App(navController: NavHostController) {
+fun App(navController: NavHostController, tableData: List<List<String>>) {
     Sporting_klassementTheme {
         NavHost(navController = navController, startDestination = "home") {
             composable("home") {
                 HomeScreen(navController = navController)
             }
             composable("table") {
-                TableComponent()
+                WearApp(tableData)
             }
             composable("other") {
                 OtherComponent()
@@ -272,7 +155,9 @@ fun HomeScreen(navController: NavHostController) {
     ) {
         Button(
             onClick = { navController.navigate("table") },
-            modifier = Modifier.padding(8.dp).width(150.dp),
+            modifier = Modifier
+                .padding(8.dp)
+                .width(150.dp),
             colors = ButtonDefaults.buttonColors(
                 backgroundColor = Color.White,
                 contentColor = Color.Black
@@ -283,7 +168,9 @@ fun HomeScreen(navController: NavHostController) {
 
         Button(
             onClick = { navController.navigate("other") },
-            modifier = Modifier.padding(8.dp).width(150.dp),
+            modifier = Modifier
+                .padding(8.dp)
+                .width(150.dp),
             colors = ButtonDefaults.buttonColors(
                 backgroundColor = Color.White,
                 contentColor = Color.Black
@@ -294,20 +181,73 @@ fun HomeScreen(navController: NavHostController) {
     }
 }
 
-
-@Composable
-fun TableComponent() {
-    Text(text = "Hello, World!")
-}
-
 @Composable
 fun OtherComponent() {
     Text(text = "Hello, World!")
 }
 
+
+// @Composable zorgt ervoor dat toolkit enabled wordt zodat je declaratief kan schrijven
+// via Jetpack Compose toolkit
+@Composable
+fun WearApp(tableData: List<List<String>>) {
+    Sporting_klassementTheme {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color.Black)
+//                .padding(3.dp)
+        ) {
+            Table(tableData)
+        }
+    }
+}
+
+@Composable
+fun Table(tableData: List<List<String>>) {
+    LazyColumn(modifier = Modifier.fillMaxSize()) {
+        // padding bovenaan zetten, anders kan je eerste rij niet volledig zien
+        item {
+            Spacer(modifier = Modifier.height(55.dp))
+        }
+        items(tableData.size) { rowIndex ->
+            val row = tableData[rowIndex]
+            Row(modifier = Modifier.fillMaxWidth()) {
+                row.forEach { cellData ->
+                    val cellModifier = if (rowIndex == 0) {
+                        Modifier.padding(start = 12.dp, end = 1.dp)
+                    } else {
+                        Modifier.padding(6.dp)
+                    }
+                    Cell(cellData = cellData, modifier = cellModifier)
+                }
+            }
+        }
+        // ook onderaan padding toevoegen
+        item {
+            Spacer(modifier = Modifier.height(55.dp))
+        }
+
+    }
+}
+
+
+@Composable
+fun Cell(cellData: String, modifier: Modifier) {
+    Text(
+        modifier = modifier,
+        text = cellData
+    )
+}
+
+
 @Preview
 @Composable
 fun PreviewApp() {
     val navController = rememberNavController()
-    App(navController = navController)
+    val tableData = listOf(
+        listOf("Row 1 Cell 1", "Row 1 Cell 2"),
+        listOf("Row 2 Cell 1", "Row 2 Cell 2")
+    )
+    App(navController = navController, tableData)
 }
